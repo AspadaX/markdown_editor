@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   FocusNode textFieldFocus = FocusNode();
   KeyEvent? key;
   final TextEditingController textController = MarkdownTextEditingController(
-    MarkdownEditorParser()
+    MarkdownEditorParser(),
   );
 
   @override
@@ -65,9 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
             focusNode: textFieldFocus,
             controller: textController,
             keyboardType: TextInputType.multiline,
-            decoration: InputDecoration(
-              border: InputBorder.none
-            ),
+            decoration: InputDecoration(border: InputBorder.none),
           ),
         ),
       ],

@@ -1,5 +1,7 @@
 // lib/src/renderer.dart
 import 'package:editor/bit_markdown/editor_parser.dart';
+import 'package:editor/bit_markdown/elements.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -286,13 +288,19 @@ class MarkdownEditorRenderer {
     return pos;
   }
 
-  static List<InlineSpan> buildInlineSpans(String text, MarkdownEditorParser parser) {
-    final elements = parser.parseDocument(text);
-    List<InlineSpan> spans = [];
-    for (final element in elements) {
-      spans.add(element.buildWidget());
+  static Future<List<InlineSpan>> buildInlineSpans(
+    String text,
+    MarkdownEditorParser parser,
+  ) async {
+    final List<MarkdownElement> elements = await compute(
+      parser.parseDocument,
+      text,
+    );
+    List<InlineSpan> newSpans = [];
+    for (final MarkdownElement element in elements) {
+      newSpans.add(element.buildWidget());
     }
 
-    return spans;
+    return newSpans;
   }
 }
