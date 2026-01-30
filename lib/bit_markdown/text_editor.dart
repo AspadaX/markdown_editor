@@ -13,20 +13,16 @@ class MarkdownTextEditingController extends TextEditingController {
 
   MarkdownTextEditingController(this.parser);
 
-  Future<void> _renderMarkdown() async {
-    print("\tprocessing buildInlineSpans...");
+  Future<void> _parseAndPrepareMarkdownForRendering() async {
     processedInlineTextSpans = await MarkdownEditorRenderer.buildInlineSpans(
       text,
       parser,
     );
-    print("\tprocessed InlineSpans: $processedInlineTextSpans");
-    print("\tfinished processing buildInlineSpans");
     isRebuild = true;
     notifyListeners();
   }
 
   TextSpan _rebuild(TextStyle? style) {
-    print("Updating the text spans");
     // Update the cache
     lastProcessedInlineTextSpans = processedInlineTextSpans;
     lastProcessedTextSpan = TextSpan(
@@ -49,15 +45,12 @@ class MarkdownTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    print("\n");
-    print("Comparing lastText and text");
-    
     if (isRebuild) {
       return _rebuild(style);
     }
 
     // We need to determine whether the spans are processed before updating it
-    if (currentText == lastText) {
+    if (text == lastText) {
       return lastProcessedTextSpan;
     }
 
@@ -71,17 +64,10 @@ class MarkdownTextEditingController extends TextEditingController {
     // current edited > yes
     // current rebuilding > no
 
-    print("Processing the text");
     // Start processing the text
-    _renderMarkdown();
-
-    print("Swap the text into lastText");
+    _parseAndPrepareMarkdownForRendering();
+    
     lastText = text;
-    currentText = text;
-
-    print("returned last processed text span");
-    print("text: $text");
-    print("InlineSpan: $lastProcessedInlineTextSpans");
     return lastProcessedTextSpan;
   }
 }

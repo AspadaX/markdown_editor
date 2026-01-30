@@ -1,4 +1,5 @@
 // lib/src/renderer.dart
+import 'package:editor/bit_markdown/editor_elements.dart';
 import 'package:editor/bit_markdown/editor_parser.dart';
 import 'package:editor/bit_markdown/elements.dart';
 import 'package:flutter/foundation.dart';
@@ -256,7 +257,12 @@ class MarkdownEditorRenderer {
       }
 
       // Regular
-      final next = _findNext(text, i);
+      var next = _findNext(text, i);
+
+      if (next == i) {
+        next = i + 1;
+      }
+
       spans.add(TextSpan(text: text.substring(i, next)));
       i = next;
     }
