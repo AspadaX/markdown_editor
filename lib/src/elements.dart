@@ -1,6 +1,9 @@
-import 'package:editor/bit_markdown/editor_renderer.dart';
-import 'package:editor/bit_markdown/elements.dart';
+import 'package:bit_markdown_editor/src/renderer.dart';
 import 'package:flutter/material.dart';
+
+abstract class MarkdownElement {
+  InlineSpan buildWidget();
+}
 
 class EditorTextElement extends MarkdownElement {
   final String text;
@@ -9,7 +12,7 @@ class EditorTextElement extends MarkdownElement {
   EditorTextElement(this.text, {this.style});
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderText(text, style);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderText(text, style);
 }
 
 class EditorHeadingElement extends MarkdownElement {
@@ -19,7 +22,7 @@ class EditorHeadingElement extends MarkdownElement {
   EditorHeadingElement(this.text, this.level);
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderHeading(text, level);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderHeading(text, level);
 }
 
 class EditorBlockQuoteElement extends MarkdownElement {
@@ -28,7 +31,7 @@ class EditorBlockQuoteElement extends MarkdownElement {
   EditorBlockQuoteElement(this.text);
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderBlockQuote(text);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderBlockQuote(text);
 }
 
 class EditorListItemElement extends MarkdownElement {
@@ -38,12 +41,12 @@ class EditorListItemElement extends MarkdownElement {
   EditorListItemElement(this.text, {this.ordered = false});
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderListItem(text, ordered);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderListItem(text, ordered);
 }
 
 class EditorHorizontalLine extends MarkdownElement {
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderHorizontalLine();
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderHorizontalLine();
 }
 
 class EditorTableRowElement extends MarkdownElement {
@@ -51,7 +54,7 @@ class EditorTableRowElement extends MarkdownElement {
   EditorTableRowElement(this.cells);
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderTableRow(cells);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderTableRow(cells);
 }
 
 class EditorCodeBlockElement extends MarkdownElement {
@@ -60,7 +63,7 @@ class EditorCodeBlockElement extends MarkdownElement {
   EditorCodeBlockElement(this.code, {this.language});
 
   @override
-  dynamic buildWidget() =>
+  InlineSpan buildWidget() =>
       MarkdownEditorRenderer.renderCodeBlock(code, language: language);
 }
 
@@ -69,7 +72,7 @@ class EditorMathBlockElement extends MarkdownElement {
   EditorMathBlockElement(this.expression);
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderMathBlock(expression);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderMathBlock(expression);
 }
 
 class EditorMathInlineElement extends MarkdownElement {
@@ -77,7 +80,7 @@ class EditorMathInlineElement extends MarkdownElement {
   EditorMathInlineElement(this.expression);
 
   @override
-  dynamic buildWidget() => MarkdownEditorRenderer.renderMathInline(expression);
+  InlineSpan buildWidget() => MarkdownEditorRenderer.renderMathInline(expression);
 }
 
 class EditorImageElement extends MarkdownElement {
@@ -87,7 +90,7 @@ class EditorImageElement extends MarkdownElement {
 
   EditorImageElement(this.alt, this.url, {this.title});
   @override
-  dynamic buildWidget() =>
+  InlineSpan buildWidget() =>
       MarkdownEditorRenderer.renderImage(url, altText: alt, title: title);
 }
 
@@ -100,6 +103,6 @@ class EditorLinkElement extends MarkdownElement {
   EditorLinkElement(this.text, this.url, {this.title, this.onTap});
 
   @override
-  dynamic buildWidget() =>
+  InlineSpan buildWidget() =>
       MarkdownEditorRenderer.renderLink(text, url, title: title, onTap: onTap);
 }

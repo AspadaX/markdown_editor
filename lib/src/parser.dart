@@ -1,14 +1,18 @@
-import 'package:editor/bit_markdown/elements.dart';
+import 'package:bit_markdown_editor/src/elements.dart';
 
-class MarkdownParser {
+class MarkdownEditorParser {
+  final _numRegex = RegExp(r'^\d+\.\s+');
+  final _imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',);
+  final _linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',);
+
   // Multiline parser
-  static List<MarkdownElement> parseDocument(String text) {
-    final lines = text.split('\n');
+  List<MarkdownElement> parseDocument(String text) {
+    final lines = _splitKeepingNewlines(text);
     final elements = <MarkdownElement>[];
 
     var i = 0;
     while (i < lines.length) {
-      final line = lines[i].trim();
+      final line = lines[i];
 
       if (line.isEmpty) {
         i++;
@@ -27,7 +31,7 @@ class MarkdownParser {
         }
 
         elements.add(
-          CodeBlockElement(
+          EditorCodeBlockElement(
             codeLines.join('\n'),
             language: language.isEmpty ? null : language,
           ),
@@ -45,7 +49,7 @@ class MarkdownParser {
           i++;
         }
 
-        elements.add(MathBlockElement(mathLines.join('\n').trim()));
+        elements.add(EditorMathBlockElement(mathLines.join('\n').trim()));
         i++;
         continue;
       }
@@ -58,28 +62,28 @@ class MarkdownParser {
   }
 
   // Line by line parser
-  static MarkdownElement parseLine(String line) {
+  MarkdownElement parseLine(String line) {
     // Heading
     if (line.startsWith('#')) {
       final level = line.indexOf(' ');
       final text = line.substring(level + 1);
-      return HeadingElement(text, level);
+      return EditorHeadingElement(text, level);
     }
 
     // Unordered list
     if (line.startsWith('- ')) {
-      return ListItemElement(line.substring(2));
+      return EditorListItemElement(line.substring(2));
     }
 
     // Ordered list
-    final numMatch = RegExp(r'^\d+\.\s+').firstMatch(line);
+    final numMatch = _numRegex.firstMatch(line);
     if (numMatch != null) {
-      return ListItemElement(line.substring(numMatch.end), ordered: true);
+      return EditorListItemElement(line.substring(numMatch.end), ordered: true);
     }
 
     // Block quote
     if (line.startsWith('> ')) {
-      return BlockQuoteElement(line.substring(2));
+      return EditorBlockQuoteElement(line.substring(2));
     }
 
     // Table
@@ -89,37 +93,50 @@ class MarkdownParser {
           .split('|')
           .map((c) => c.trim())
           .toList();
-      return TableRowElement(cells);
+      return EditorTableRowElement(cells);
     }
 
     // Horizontal line
     if (line.startsWith('---') || line.startsWith('***')) {
-      return HorizontalLine();
+      return EditorHorizontalLine();
     }
 
     // Image ![alt](url "title")
-    final imageMatch = RegExp(
-      r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',
-    ).firstMatch(line);
+    final imageMatch = _imageRegex.firstMatch(line);
     if (imageMatch != null) {
       final alt = imageMatch.group(1) ?? '';
       final url = imageMatch.group(2) ?? '';
       final title = imageMatch.group(3);
-      return ImageElement(alt, url, title: title);
+      return EditorImageElement(alt, url, title: title);
     }
 
     // Link [text](url "title")
-    final linkMatch = RegExp(
-      r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',
-    ).firstMatch(line);
+    final linkMatch = _linkRegex.firstMatch(line);
     if (linkMatch != null) {
       final text = linkMatch.group(1) ?? '';
       final url = linkMatch.group(2) ?? '';
       final title = linkMatch.group(3);
-      return LinkElement(text, url, title: title);
+      return EditorLinkElement(text, url, title: title);
     }
 
     // Default text
-    return TextElement(line);
+    return EditorTextElement(line);
+  }
+
+  List<String> _splitKeepingNewlines(String text) {
+    final lines = <String>[];
+    int start = 0;
+    while (true) {
+      final index = text.indexOf('\n', start);
+      if (index == -1) {
+        if (start < text.length) {
+          lines.add(text.substring(start));
+        }
+        break;
+      }
+      lines.add(text.substring(start, index + 1));
+      start = index + 1;
+    }
+    return lines;
   }
 }

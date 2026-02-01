@@ -1,5 +1,5 @@
-name: editor
-description: "A new Flutter project."
+name: bit_markdown_controller
+description: "A performant WYSIWYG markdown editor"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -34,11 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  markdown_widget: ^2.3.2+8
-  super_editor_markdown: ^0.2.2
-  super_editor: ^0.3.0-dev.39
   flutter_math_fork: ^0.7.4
-  rich_text_controller: ^3.0.1
 
 dev_dependencies:
   flutter_test:

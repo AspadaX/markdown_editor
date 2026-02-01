@@ -1,6 +1,7 @@
-import 'package:editor/bit_markdown/editor_parser.dart';
-import 'package:editor/bit_markdown/editor_renderer.dart';
+import 'package:bit_markdown_editor/src/renderer.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'parser.dart';
 
 class MarkdownTextEditingController extends TextEditingController {
   MarkdownEditorParser parser;
@@ -53,16 +54,6 @@ class MarkdownTextEditingController extends TextEditingController {
     if (text == lastText) {
       return lastProcessedTextSpan;
     }
-
-    // currentText
-    // no edit > no update
-    // edited > update
-    // rebuilding > no update
-    //
-    // lastText
-    // current no edit > no
-    // current edited > yes
-    // current rebuilding > no
 
     // Start processing the text
     _parseAndPrepareMarkdownForRendering();
