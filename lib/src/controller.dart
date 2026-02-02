@@ -9,7 +9,6 @@ class MarkdownTextEditingController extends TextEditingController {
   MarkdownEditorParser parser;
   List<InlineSpan> processedInlineTextSpans = [];
   String lastText = '';
-  String currentText = '';
   TextSpan lastProcessedTextSpan = TextSpan();
   List<InlineSpan> lastProcessedInlineTextSpans = [];
   bool isRebuild = false;

@@ -2,8 +2,8 @@ import 'elements.dart';
 
 class MarkdownEditorParser {
   final _numRegex = RegExp(r'^\d+\.\s+');
-  final _imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',);
-  final _linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)',);
+  final _imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
+  final _linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
 
   // Multiline parser
   List<MarkdownElement> parseDocument(String text) {
