@@ -23,38 +23,54 @@ class MarkdownEditorParser {
       if (line.startsWith('```')) {
         final language = line.substring(3).trim();
         final codeLines = <String>[];
+        int consumedLength = line.length;
         i++;
 
         while (i < lines.length && !lines[i].trim().startsWith('```')) {
           codeLines.add(lines[i]);
+          consumedLength += lines[i].length;
           i++;
         }
 
-        elements.add(
-          EditorCodeBlockElement(
+        if (i < lines.length && lines[i].trim().startsWith('```')) {
+             consumedLength += lines[i].length;
+             i++;
+        }
+
+        final element = EditorCodeBlockElement(
             codeLines.join('\n'),
             language: language.isEmpty ? null : language,
-          ),
-        );
-        i++;
+          );
+        element.sourceLength = consumedLength;
+        elements.add(element);
         continue;
       }
 
       // Block Math $$...$$
       if (line.startsWith(r'$$')) {
         final mathLines = <String>[];
+        int consumedLength = line.length;
         i++;
         while (i < lines.length && !lines[i].trim().startsWith(r'$$')) {
           mathLines.add(lines[i]);
+          consumedLength += lines[i].length;
           i++;
         }
+        
+        if (i < lines.length && lines[i].trim().startsWith(r'$$')) {
+             consumedLength += lines[i].length;
+             i++;
+        }
 
-        elements.add(EditorMathBlockElement(mathLines.join('\n').trim()));
-        i++;
+        final element = EditorMathBlockElement(mathLines.join('\n').trim());
+        element.sourceLength = consumedLength;
+        elements.add(element);
         continue;
       }
 
-      elements.add(parseLine(line));
+      final element = parseLine(line);
+      element.sourceLength = line.length;
+      elements.add(element);
       i++;
     }
 

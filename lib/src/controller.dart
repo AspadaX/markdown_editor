@@ -15,6 +15,7 @@ class MarkdownTextEditingController extends TextEditingController {
   TextSpan lastProcessedTextSpan = TextSpan();
   List<InlineSpan> processedInlineTextSpans = [];
   List<InlineSpan> lastProcessedInlineTextSpans = [];
+  List<TextRange> invisibleRanges = [];
 
   bool isRebuild = false;
 
@@ -25,10 +26,29 @@ class MarkdownTextEditingController extends TextEditingController {
 
   void _parseAndPrepareMarkdownForRendering() {
     elements = parser.parseDocument(text);
-    processedInlineTextSpans = MarkdownEditorRenderer.buildInlineTextSpans(
+    final results = MarkdownEditorRenderer.buildRenderResults(
       elements,
       styleSheet,
     );
+    processedInlineTextSpans = results.map((e) => e.span).toList();
+
+    // Calculate absolute invisible ranges
+    invisibleRanges.clear();
+    int currentOffset = 0;
+    for (int i = 0; i < elements.length; i++) {
+      final element = elements[i];
+      final result = results[i];
+
+      for (final range in result.invisibleRanges) {
+        invisibleRanges.add(TextRange(
+          start: range.start + currentOffset,
+          end: range.end + currentOffset,
+        ));
+      }
+
+      currentOffset += element.sourceLength;
+    }
+
     isRebuild = true;
   }
 
@@ -67,5 +87,42 @@ class MarkdownTextEditingController extends TextEditingController {
     }
 
     return lastProcessedTextSpan;
+  }
+
+  @override
+  set selection(TextSelection newSelection) {
+    super.selection = _adjustSelection(newSelection);
+  }
+
+  TextSelection _adjustSelection(TextSelection newSelection) {
+    if (!newSelection.isValid) return newSelection;
+
+    // Only adjust collapsed selection (cursor)
+    if (newSelection.isCollapsed) {
+      final offset = newSelection.baseOffset;
+      final prevOffset = selection.baseOffset;
+      
+      for (final range in invisibleRanges) {
+        // Check if cursor lands inside an invisible range (exclusive of start/end)
+        // We allow landing AT start or AT end, but not in between.
+        // Actually, with width 0, start and end are visually the same.
+        // But logically, we want to prevent being "inside" the tag.
+        if (range.start < offset && offset < range.end) {
+          // Determine direction
+          if (offset > prevOffset) {
+            // Moving right: jump to end
+            return TextSelection.collapsed(offset: range.end);
+          } else if (offset < prevOffset) {
+            // Moving left: jump to start
+            return TextSelection.collapsed(offset: range.start);
+          } else {
+            // No movement (e.g. tap)? Jump to nearest or end.
+            // Default to end to "enter" the content or "exit" the tag.
+            return TextSelection.collapsed(offset: range.end);
+          }
+        }
+      }
+    }
+    return newSelection;
   }
 }
