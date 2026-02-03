@@ -20,34 +20,37 @@ class EditorTextElement extends MarkdownElement {
 
 class EditorHeadingElement extends MarkdownElement {
   final String text;
+  final String prefix;
   final int level;
 
-  EditorHeadingElement(this.text, this.level);
+  EditorHeadingElement(this.text, this.prefix, this.level);
 
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderHeading(text, level, styleSheet);
+      MarkdownEditorRenderer.renderHeading(text, prefix, level, styleSheet);
 }
 
 class EditorBlockQuoteElement extends MarkdownElement {
   final String text;
+  final String prefix;
 
-  EditorBlockQuoteElement(this.text);
+  EditorBlockQuoteElement(this.text, this.prefix);
 
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderBlockQuote(text, styleSheet);
+      MarkdownEditorRenderer.renderBlockQuote(text, prefix, styleSheet);
 }
 
 class EditorListItemElement extends MarkdownElement {
   final String text;
+  final String prefix;
   final bool ordered;
 
-  EditorListItemElement(this.text, {this.ordered = false});
+  EditorListItemElement(this.text, this.prefix, {this.ordered = false});
 
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderListItem(text, ordered, styleSheet);
+      MarkdownEditorRenderer.renderListItem(text, prefix, ordered, styleSheet);
 }
 
 class EditorHorizontalLine extends MarkdownElement {
@@ -72,7 +75,11 @@ class EditorCodeBlockElement extends MarkdownElement {
 
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderCodeBlock(code, styleSheet, language: language);
+      MarkdownEditorRenderer.renderCodeBlock(
+        code,
+        styleSheet,
+        language: language,
+      );
 }
 
 class EditorMathBlockElement extends MarkdownElement {
@@ -101,8 +108,12 @@ class EditorImageElement extends MarkdownElement {
   EditorImageElement(this.alt, this.url, {this.title});
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderImage(url, styleSheet,
-          altText: alt, title: title);
+      MarkdownEditorRenderer.renderImage(
+        url,
+        styleSheet,
+        altText: alt,
+        title: title,
+      );
 }
 
 class EditorLinkElement extends MarkdownElement {
@@ -115,6 +126,11 @@ class EditorLinkElement extends MarkdownElement {
 
   @override
   InlineSpan buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderLink(text, url, styleSheet,
-          title: title, onTap: onTap);
+      MarkdownEditorRenderer.renderLink(
+        text,
+        url,
+        styleSheet,
+        title: title,
+        onTap: onTap,
+      );
 }

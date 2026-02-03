@@ -67,23 +67,24 @@ class MarkdownEditorParser {
     if (line.startsWith('#')) {
       final level = line.indexOf(' ');
       final text = line.substring(level + 1);
-      return EditorHeadingElement(text, level);
+      final prefix = line.substring(0, level + 1);
+      return EditorHeadingElement(text, prefix, level);
     }
 
     // Unordered list
     if (line.startsWith('- ')) {
-      return EditorListItemElement(line.substring(2));
+      return EditorListItemElement(line.substring(2), line.substring(0, 2));
     }
 
     // Ordered list
     final numMatch = _numRegex.firstMatch(line);
     if (numMatch != null) {
-      return EditorListItemElement(line.substring(numMatch.end), ordered: true);
+      return EditorListItemElement(line.substring(numMatch.end), line.substring(0, numMatch.end), ordered: true);
     }
 
     // Block quote
     if (line.startsWith('> ')) {
-      return EditorBlockQuoteElement(line.substring(2));
+      return EditorBlockQuoteElement(line.substring(2), line.substring(0, 2));
     }
 
     // Table

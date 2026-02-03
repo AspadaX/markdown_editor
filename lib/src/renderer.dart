@@ -10,7 +10,7 @@ import 'style_sheet.dart';
 class MarkdownEditorRenderer {
   static void Function(String url)? onLinkTap;
 
-  static InlineSpan renderHeading(String text, int level, MarkdownStyleSheet styleSheet) {
+  static InlineSpan renderHeading(String text, String prefix, int level, MarkdownStyleSheet styleSheet) {
     TextStyle style;
     switch (level) {
       case 1:
@@ -36,17 +36,22 @@ class MarkdownEditorRenderer {
         break;
     }
     return TextSpan(
-      text: text,
-      style: style,
+      children: [
+        TextSpan(text: prefix, style: const TextStyle(color: Colors.transparent, fontSize: 0.0, letterSpacing: 0)),
+        TextSpan(
+          text: text,
+          style: style,
+        ),
+      ],
     );
   }
 
-  static InlineSpan renderListItem(String text, bool ordered, MarkdownStyleSheet styleSheet) {
+  static InlineSpan renderListItem(String text, String prefix, bool ordered, MarkdownStyleSheet styleSheet) {
     final rendered = renderText(text, styleSheet, style: styleSheet.listBullet);
     final textSpan = rendered is TextSpan ? rendered : TextSpan(text: text);
     return TextSpan(
       children: [
-        TextSpan(text: ordered ? '• ' : '• ', style: styleSheet.listBullet),
+        TextSpan(text: prefix, style: const TextStyle(color: Colors.transparent, fontSize: 0.0, letterSpacing: 0)),
         textSpan,
       ],
     );
@@ -68,10 +73,15 @@ class MarkdownEditorRenderer {
     return TextSpan(children: spans);
   }
 
-  static InlineSpan renderBlockQuote(String text, MarkdownStyleSheet styleSheet) {
+  static InlineSpan renderBlockQuote(String text, String prefix, MarkdownStyleSheet styleSheet) {
     return TextSpan(
-      text: text,
-      style: styleSheet.blockQuote,
+      children: [
+        TextSpan(text: prefix, style: const TextStyle(color: Colors.transparent, fontSize: 0.0, letterSpacing: 0)),
+        TextSpan(
+          text: text,
+          style: styleSheet.blockQuote,
+        ),
+      ],
     );
   }
 
@@ -289,10 +299,19 @@ class MarkdownEditorRenderer {
     return pos;
   }
 
-  static Future<List<InlineSpan>> buildInlineSpans(String text, MarkdownEditorParser parser, MarkdownStyleSheet styleSheet) async {
-    final List<MarkdownElement> elements = await compute(parser.parseDocument, text);
+  // static Future<List<InlineSpan>> buildInlineSpans(String text, MarkdownEditorParser parser, MarkdownStyleSheet styleSheet) async {
+  //   final List<MarkdownElement> elements = await compute(parser.parseDocument, text);
+  //   List<InlineSpan> newSpans = [];
+  //   for (final MarkdownElement element in elements) {
+  //     newSpans.add(element.buildWidget(styleSheet));
+  //   }
+
+  //   return newSpans;
+  // }
+  
+  static List<InlineSpan> buildInlineTextSpans(List<MarkdownElement> markdownElements, MarkdownStyleSheet styleSheet) {
     List<InlineSpan> newSpans = [];
-    for (final MarkdownElement element in elements) {
+    for (final MarkdownElement element in markdownElements) {
       newSpans.add(element.buildWidget(styleSheet));
     }
 
