@@ -5,7 +5,12 @@ import 'style_sheet.dart';
 
 abstract class MarkdownElement {
   int sourceLength = 0;
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet);
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  });
 }
 
 class EditorTextElement extends MarkdownElement {
@@ -15,8 +20,18 @@ class EditorTextElement extends MarkdownElement {
   EditorTextElement(this.text, {this.style});
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderText(text, styleSheet, style: style);
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
+      MarkdownEditorRenderer.renderText(
+        text,
+        styleSheet,
+        style: style,
+        enableMath: enableMath,
+      );
 }
 
 class EditorHeadingElement extends MarkdownElement {
@@ -27,7 +42,12 @@ class EditorHeadingElement extends MarkdownElement {
   EditorHeadingElement(this.text, this.prefix, this.level);
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderHeading(text, prefix, level, styleSheet);
 }
 
@@ -38,7 +58,12 @@ class EditorBlockQuoteElement extends MarkdownElement {
   EditorBlockQuoteElement(this.text, this.prefix);
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderBlockQuote(text, prefix, styleSheet);
 }
 
@@ -50,13 +75,23 @@ class EditorListItemElement extends MarkdownElement {
   EditorListItemElement(this.text, this.prefix, {this.ordered = false});
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderListItem(text, prefix, ordered, styleSheet);
 }
 
 class EditorHorizontalLine extends MarkdownElement {
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderHorizontalLine(styleSheet);
 }
 
@@ -65,7 +100,12 @@ class EditorTableRowElement extends MarkdownElement {
   EditorTableRowElement(this.cells);
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderTableRow(cells, styleSheet);
 }
 
@@ -75,7 +115,12 @@ class EditorCodeBlockElement extends MarkdownElement {
   EditorCodeBlockElement(this.code, {this.language});
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) =>
       MarkdownEditorRenderer.renderCodeBlock(
         code,
         styleSheet,
@@ -88,8 +133,21 @@ class EditorMathBlockElement extends MarkdownElement {
   EditorMathBlockElement(this.expression);
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderMathBlock(expression, styleSheet);
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) {
+    if (!enableMath) {
+      return MarkdownEditorRenderer.renderText(
+        '\$\$$expression\$\$',
+        styleSheet,
+        enableMath: false,
+      );
+    }
+    return MarkdownEditorRenderer.renderMathBlock(expression, styleSheet);
+  }
 }
 
 class EditorMathInlineElement extends MarkdownElement {
@@ -97,8 +155,21 @@ class EditorMathInlineElement extends MarkdownElement {
   EditorMathInlineElement(this.expression);
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderMathInline(expression, styleSheet);
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) {
+    if (!enableMath) {
+      return MarkdownEditorRenderer.renderText(
+        '\$$expression\$',
+        styleSheet,
+        enableMath: false,
+      );
+    }
+    return MarkdownEditorRenderer.renderMathInline(expression, styleSheet);
+  }
 }
 
 class EditorImageElement extends MarkdownElement {
@@ -109,14 +180,26 @@ class EditorImageElement extends MarkdownElement {
 
   EditorImageElement(this.alt, this.url, this.sourceText, {this.title});
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderImage(
-        url,
-        styleSheet,
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) {
+    if (!enableImages) {
+      return MarkdownEditorRenderer.renderText(
         sourceText,
-        altText: alt,
-        title: title,
+        styleSheet,
+        enableMath: enableMath,
       );
+    }
+    return MarkdownEditorRenderer.renderImage(
+      url,
+      styleSheet,
+      altText: alt,
+      title: title,
+    );
+  }
 }
 
 class EditorLinkElement extends MarkdownElement {
@@ -130,13 +213,25 @@ class EditorLinkElement extends MarkdownElement {
       {this.title, this.onTap});
 
   @override
-  RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
-      MarkdownEditorRenderer.renderLink(
-        text,
-        url,
+  RenderResult buildWidget(
+    MarkdownStyleSheet styleSheet, {
+    bool enableLinks = true,
+    bool enableImages = true,
+    bool enableMath = true,
+  }) {
+    if (!enableLinks) {
+      return MarkdownEditorRenderer.renderText(
         sourceText,
         styleSheet,
-        title: title,
-        onTap: onTap,
+        enableMath: enableMath,
       );
+    }
+    return MarkdownEditorRenderer.renderLink(
+      text,
+      url,
+      styleSheet,
+      title: title,
+      onTap: onTap,
+    );
+  }
 }

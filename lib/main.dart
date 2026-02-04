@@ -292,6 +292,38 @@ $$
             onPressed: widget.onThemeToggle,
             tooltip: 'Toggle Theme',
           ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'links') {
+                _controller.updateConfig(enableLinks: !_controller.enableLinks);
+              } else if (value == 'images') {
+                _controller.updateConfig(
+                    enableImages: !_controller.enableImages);
+              } else if (value == 'math') {
+                _controller.updateConfig(enableMath: !_controller.enableMath);
+              }
+              setState(() {});
+            },
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem(
+                value: 'links',
+                checked: _controller.enableLinks,
+                child: const Text('Enable Links'),
+              ),
+              CheckedPopupMenuItem(
+                value: 'images',
+                checked: _controller.enableImages,
+                child: const Text('Enable Images'),
+              ),
+              CheckedPopupMenuItem(
+                value: 'math',
+                checked: _controller.enableMath,
+                child: const Text('Enable Math'),
+              ),
+            ],
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+          ),
         ],
       ),
       body: Padding(

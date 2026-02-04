@@ -9,6 +9,10 @@ class MarkdownTextEditingController extends TextEditingController {
   MarkdownStyleSheet styleSheet;
   MarkdownEditorParser parser;
 
+  bool enableLinks;
+  bool enableImages;
+  bool enableMath;
+
   String lastText = '';
   List<MarkdownElement> elements = [];
 
@@ -22,6 +26,9 @@ class MarkdownTextEditingController extends TextEditingController {
   MarkdownTextEditingController({
     required this.parser,
     required this.styleSheet,
+    this.enableLinks = true,
+    this.enableImages = true,
+    this.enableMath = true,
   });
 
   void _parseAndPrepareMarkdownForRendering() {
@@ -29,6 +36,9 @@ class MarkdownTextEditingController extends TextEditingController {
     final results = MarkdownEditorRenderer.buildRenderResults(
       elements,
       styleSheet,
+      enableLinks: enableLinks,
+      enableImages: enableImages,
+      enableMath: enableMath,
     );
     processedInlineTextSpans = results.map((e) => e.span).toList();
 
@@ -57,6 +67,22 @@ class MarkdownTextEditingController extends TextEditingController {
     _parseAndPrepareMarkdownForRendering();
     isRebuild = true;
     notifyListeners();
+  }
+
+  void updateConfig({
+    bool? enableLinks,
+    bool? enableImages,
+    bool? enableMath,
+  }) {
+    if (enableLinks != null) this.enableLinks = enableLinks;
+    if (enableImages != null) this.enableImages = enableImages;
+    if (enableMath != null) this.enableMath = enableMath;
+    
+    if (text.isNotEmpty) {
+      _parseAndPrepareMarkdownForRendering();
+      isRebuild = true;
+      notifyListeners();
+    }
   }
 
   TextSpan _rebuild(TextStyle? style) {
