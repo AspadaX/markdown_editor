@@ -1,9 +1,9 @@
 import 'elements.dart';
 
 class MarkdownEditorParser {
-  final _numRegex = RegExp(r'^\d+\.\s+');
-  final _imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
-  final _linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
+  static final _numRegex = RegExp(r'^\d+\.\s+');
+  static final imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
+  static final linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
 
   // Multiline parser
   List<MarkdownElement> parseDocument(String text) {
@@ -123,21 +123,21 @@ class MarkdownEditorParser {
     }
 
     // Image ![alt](url "title")
-    final imageMatch = _imageRegex.firstMatch(line);
+    final imageMatch = imageRegex.firstMatch(line);
     if (imageMatch != null) {
       final alt = imageMatch.group(1) ?? '';
       final url = imageMatch.group(2) ?? '';
       final title = imageMatch.group(3);
-      return EditorImageElement(alt, url, title: title);
+      return EditorImageElement(alt, url, line, title: title);
     }
 
     // Link [text](url "title")
-    final linkMatch = _linkRegex.firstMatch(line);
+    final linkMatch = linkRegex.firstMatch(line);
     if (linkMatch != null) {
       final text = linkMatch.group(1) ?? '';
       final url = linkMatch.group(2) ?? '';
       final title = linkMatch.group(3);
-      return EditorLinkElement(text, url, title: title);
+      return EditorLinkElement(text, url, line, title: title);
     }
 
     // Default text

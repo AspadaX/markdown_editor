@@ -247,53 +247,169 @@ class MarkdownEditorRenderer {
 
   static RenderResult renderImage(
     String url,
-    MarkdownStyleSheet styleSheet, {
+    MarkdownStyleSheet styleSheet,
+    String sourceText, {
     String? altText,
     String? title,
   }) {
-    return RenderResult(
-      TextSpan(
-        children: [
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Tooltip(
-                message: title ?? '',
-                child: Image.network(
-                  url,
-                  errorBuilder: (context, error, stackTrace) {
-                    return altText != null
-                        ? Text(altText)
-                        : const Icon(Icons.broken_image, size: 48);
-                  },
-                ),
+    final match = MarkdownEditorParser.imageRegex.firstMatch(sourceText);
+    
+    final spans = <InlineSpan>[];
+    final invisibleRanges = <TextRange>[];
+    int currentOffset = 0;
+
+    if (match != null) {
+      // Prefix
+      if (match.start > 0) {
+        final prefix = sourceText.substring(0, match.start);
+        spans.add(TextSpan(text: prefix, style: styleSheet.p));
+        currentOffset += prefix.length;
+      }
+
+      // The Image Markdown Syntax - rendered invisible
+      final matchText = sourceText.substring(match.start, match.end);
+      
+      // We replace the first character (usually '!') with the WidgetSpan to maintain length
+      // 1. The Image Widget (replaces '!')
+      spans.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Tooltip(
+              message: title ?? '',
+              child: Image.network(
+                url,
+                errorBuilder: (context, error, stackTrace) {
+                  return altText != null
+                      ? Text(altText)
+                      : const Icon(Icons.broken_image, size: 48);
+                },
               ),
             ),
           ),
-        ],
+        ),
+      );
+
+      // 2. The rest of the syntax (rendered invisible)
+      if (matchText.length > 1) {
+        spans.add(TextSpan(text: matchText.substring(1), style: invisibleText));
+      }
+      
+      invisibleRanges.add(TextRange(start: currentOffset, end: currentOffset + matchText.length));
+      currentOffset += matchText.length;
+
+      // Suffix
+      if (match.end < sourceText.length) {
+        final suffix = sourceText.substring(match.end);
+        spans.add(TextSpan(text: suffix, style: styleSheet.p));
+        currentOffset += suffix.length;
+      }
+    } else {
+       // Fallback
+       spans.add(TextSpan(text: sourceText, style: styleSheet.p));
+    }
+
+    return RenderResult(
+      TextSpan(
+        children: spans,
       ),
-      [],
+      invisibleRanges,
     );
   }
 
   static RenderResult renderLink(
     String text,
     String url,
+    String sourceText,
     MarkdownStyleSheet styleSheet, {
     String? title,
     void Function(String url)? onTap,
   }) {
-    return RenderResult(
-      TextSpan(
+    final match = MarkdownEditorParser.linkRegex.firstMatch(sourceText);
+
+    final spans = <InlineSpan>[];
+    final invisibleRanges = <TextRange>[];
+    int currentOffset = 0;
+
+    if (match != null) {
+      // Prefix
+      if (match.start > 0) {
+        final prefix = sourceText.substring(0, match.start);
+        spans.add(TextSpan(text: prefix, style: styleSheet.p));
+        currentOffset += prefix.length;
+      }
+
+      // [
+      spans.add(TextSpan(text: '[', style: invisibleText));
+      invisibleRanges.add(TextRange(start: currentOffset, end: currentOffset + 1));
+      currentOffset += 1;
+
+      // Link Text
+      spans.add(TextSpan(
         text: text,
         style: styleSheet.link,
         recognizer: TapGestureRecognizer()
           ..onTap = () {
             if (onTap != null) onTap(url);
           },
+      ));
+      // No invisible range for text itself
+      currentOffset += text.length;
+
+      // ](
+      spans.add(TextSpan(text: '](', style: invisibleText));
+      invisibleRanges
+          .add(TextRange(start: currentOffset, end: currentOffset + 2));
+      currentOffset += 2;
+
+      // URL
+      spans.add(TextSpan(text: url, style: invisibleText));
+      invisibleRanges
+          .add(TextRange(start: currentOffset, end: currentOffset + url.length));
+      currentOffset += url.length;
+
+      // Title part logic: reconstruct based on remaining length in match
+      // match.end is end of closing parenthesis ')'
+      // currentOffset is at end of url.
+      // Expected end of match is match.end.
+      // Closing parenthesis is 1 char.
+      // So between currentOffset and (match.end - 1) is the title part.
+      
+      int endOfUrl = currentOffset;
+      // We need to account for the prefix length offset when comparing with match indices
+      // match indices are relative to sourceText start.
+      // currentOffset is also relative to sourceText start (since we added prefix).
+      
+      int closingParenIndex = match.end - 1; // Index in sourceText
+      
+      if (closingParenIndex > endOfUrl) {
+         String titlePart = sourceText.substring(endOfUrl, closingParenIndex);
+         spans.add(TextSpan(text: titlePart, style: invisibleText));
+         invisibleRanges.add(TextRange(start: currentOffset, end: currentOffset + titlePart.length));
+         currentOffset += titlePart.length;
+      }
+
+      // )
+      spans.add(TextSpan(text: ')', style: invisibleText));
+      invisibleRanges.add(TextRange(start: currentOffset, end: currentOffset + 1));
+      currentOffset += 1;
+
+      // Suffix
+      if (match.end < sourceText.length) {
+        final suffix = sourceText.substring(match.end);
+        spans.add(TextSpan(text: suffix, style: styleSheet.p));
+        currentOffset += suffix.length;
+      }
+    } else {
+       spans.add(TextSpan(text: sourceText, style: styleSheet.p));
+    }
+
+    return RenderResult(
+      TextSpan(
+        children: spans,
       ),
-      [],
+      invisibleRanges,
     );
   }
 

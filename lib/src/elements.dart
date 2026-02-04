@@ -105,13 +105,15 @@ class EditorImageElement extends MarkdownElement {
   final String alt;
   final String url;
   final String? title;
+  final String sourceText;
 
-  EditorImageElement(this.alt, this.url, {this.title});
+  EditorImageElement(this.alt, this.url, this.sourceText, {this.title});
   @override
   RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
       MarkdownEditorRenderer.renderImage(
         url,
         styleSheet,
+        sourceText,
         altText: alt,
         title: title,
       );
@@ -121,15 +123,18 @@ class EditorLinkElement extends MarkdownElement {
   final String text;
   final String url;
   final String? title;
+  final String sourceText;
   void Function(String url)? onTap;
 
-  EditorLinkElement(this.text, this.url, {this.title, this.onTap});
+  EditorLinkElement(this.text, this.url, this.sourceText,
+      {this.title, this.onTap});
 
   @override
   RenderResult buildWidget(MarkdownStyleSheet styleSheet) =>
       MarkdownEditorRenderer.renderLink(
         text,
         url,
+        sourceText,
         styleSheet,
         title: title,
         onTap: onTap,
