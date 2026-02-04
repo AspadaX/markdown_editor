@@ -97,7 +97,6 @@ class MarkdownTextEditingController extends TextEditingController {
   TextSelection _adjustSelection(TextSelection newSelection) {
     if (!newSelection.isValid) return newSelection;
 
-    // Only adjust collapsed selection (cursor)
     if (newSelection.isCollapsed) {
       final offset = newSelection.baseOffset;
       final prevOffset = selection.baseOffset;
@@ -123,6 +122,7 @@ class MarkdownTextEditingController extends TextEditingController {
         }
       }
     }
+    
     return newSelection;
   }
 }

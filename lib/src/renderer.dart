@@ -189,8 +189,10 @@ class MarkdownEditorRenderer {
     // Content
     spans.add(TextSpan(text: code, style: styleSheet.codeBlock));
     
-    // Newline before closing (if needed, but usually code block assumes block display)
-    spans.add(TextSpan(text: '\n', style: styleSheet.codeBlock));
+    // Newline before closing (only if code doesn't end with one)
+    if (code.isNotEmpty && !code.endsWith('\n')) {
+      spans.add(TextSpan(text: '\n', style: styleSheet.codeBlock));
+    }
 
     // Closing backticks
     spans.add(

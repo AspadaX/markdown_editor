@@ -33,14 +33,14 @@ class MarkdownEditorParser {
         }
 
         if (i < lines.length && lines[i].trim().startsWith('```')) {
-             consumedLength += lines[i].length;
-             i++;
+          consumedLength += lines[i].length;
+          i++;
         }
 
         final element = EditorCodeBlockElement(
-            codeLines.join('\n'),
-            language: language.isEmpty ? null : language,
-          );
+          codeLines.join(''),
+          language: language.isEmpty ? null : language,
+        );
         element.sourceLength = consumedLength;
         elements.add(element);
         continue;
@@ -56,13 +56,13 @@ class MarkdownEditorParser {
           consumedLength += lines[i].length;
           i++;
         }
-        
+
         if (i < lines.length && lines[i].trim().startsWith(r'$$')) {
-             consumedLength += lines[i].length;
-             i++;
+          consumedLength += lines[i].length;
+          i++;
         }
 
-        final element = EditorMathBlockElement(mathLines.join('\n').trim());
+        final element = EditorMathBlockElement(mathLines.join('').trim());
         element.sourceLength = consumedLength;
         elements.add(element);
         continue;
@@ -95,7 +95,11 @@ class MarkdownEditorParser {
     // Ordered list
     final numMatch = _numRegex.firstMatch(line);
     if (numMatch != null) {
-      return EditorListItemElement(line.substring(numMatch.end), line.substring(0, numMatch.end), ordered: true);
+      return EditorListItemElement(
+        line.substring(numMatch.end),
+        line.substring(0, numMatch.end),
+        ordered: true,
+      );
     }
 
     // Block quote
