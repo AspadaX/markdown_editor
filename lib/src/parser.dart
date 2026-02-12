@@ -1,9 +1,9 @@
 import 'elements.dart';
 
 class MarkdownEditorParser {
-  final _numRegex = RegExp(r'^\d+\.\s+');
-  final _imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
-  final _linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
+  static final _numRegex = RegExp(r'^\d+\.\s+');
+  static final imageRegex = RegExp(r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
+  static final linkRegex = RegExp(r'\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)');
 
   // Multiline parser
   List<MarkdownElement> parseDocument(String text) {
@@ -23,38 +23,54 @@ class MarkdownEditorParser {
       if (line.startsWith('```')) {
         final language = line.substring(3).trim();
         final codeLines = <String>[];
+        int consumedLength = line.length;
         i++;
 
         while (i < lines.length && !lines[i].trim().startsWith('```')) {
           codeLines.add(lines[i]);
+          consumedLength += lines[i].length;
           i++;
         }
 
-        elements.add(
-          EditorCodeBlockElement(
-            codeLines.join('\n'),
-            language: language.isEmpty ? null : language,
-          ),
+        if (i < lines.length && lines[i].trim().startsWith('```')) {
+          consumedLength += lines[i].length;
+          i++;
+        }
+
+        final element = EditorCodeBlockElement(
+          codeLines.join(''),
+          language: language.isEmpty ? null : language,
         );
-        i++;
+        element.sourceLength = consumedLength;
+        elements.add(element);
         continue;
       }
 
       // Block Math $$...$$
       if (line.startsWith(r'$$')) {
         final mathLines = <String>[];
+        int consumedLength = line.length;
         i++;
         while (i < lines.length && !lines[i].trim().startsWith(r'$$')) {
           mathLines.add(lines[i]);
+          consumedLength += lines[i].length;
           i++;
         }
 
-        elements.add(EditorMathBlockElement(mathLines.join('\n').trim()));
-        i++;
+        if (i < lines.length && lines[i].trim().startsWith(r'$$')) {
+          consumedLength += lines[i].length;
+          i++;
+        }
+
+        final element = EditorMathBlockElement(mathLines.join('').trim());
+        element.sourceLength = consumedLength;
+        elements.add(element);
         continue;
       }
 
-      elements.add(parseLine(line));
+      final element = parseLine(line);
+      element.sourceLength = line.length;
+      elements.add(element);
       i++;
     }
 
@@ -79,7 +95,11 @@ class MarkdownEditorParser {
     // Ordered list
     final numMatch = _numRegex.firstMatch(line);
     if (numMatch != null) {
-      return EditorListItemElement(line.substring(numMatch.end), line.substring(0, numMatch.end), ordered: true);
+      return EditorListItemElement(
+        line.substring(numMatch.end),
+        line.substring(0, numMatch.end),
+        ordered: true,
+      );
     }
 
     // Block quote
@@ -103,21 +123,21 @@ class MarkdownEditorParser {
     }
 
     // Image ![alt](url "title")
-    final imageMatch = _imageRegex.firstMatch(line);
+    final imageMatch = imageRegex.firstMatch(line);
     if (imageMatch != null) {
       final alt = imageMatch.group(1) ?? '';
       final url = imageMatch.group(2) ?? '';
       final title = imageMatch.group(3);
-      return EditorImageElement(alt, url, title: title);
+      return EditorImageElement(alt, url, line, title: title);
     }
 
     // Link [text](url "title")
-    final linkMatch = _linkRegex.firstMatch(line);
+    final linkMatch = linkRegex.firstMatch(line);
     if (linkMatch != null) {
       final text = linkMatch.group(1) ?? '';
       final url = linkMatch.group(2) ?? '';
       final title = linkMatch.group(3);
-      return EditorLinkElement(text, url, title: title);
+      return EditorLinkElement(text, url, line, title: title);
     }
 
     // Default text
